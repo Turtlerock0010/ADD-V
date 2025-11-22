@@ -1,15 +1,16 @@
 /*
 Program: ADD V Code
 Creation: November 18th, 2025
-Contributors: Daniel Principe
+Contributors: Daniel Principe, Owen King
 Use: The code that goes into ADD V
 */
 
-
-#include <Alfredo_NoU3.h>
 #include <PestoLink-Receive.h>
+#include <Alfredo_NoU3.h>
 #include <stdio.h>
 
+// ---PID Class Code---
+// Gang please ignore for now thx
 class MotorPID {
   public:
     // Retrieve Given Motor
@@ -82,50 +83,79 @@ class MotorPID {
     const unsigned long PIDInterval = 20; // time in ms
 };
 
-//drive train motors init
-NoU_Motor frontleftMotor(1);
-NoU_Motor frontrightMotor(2);
-NoU_Motor backleftMotor(3);
-NoU_Motor backrightMotor(4);
+// Drivetrain Init
+NoU_Motor frontLeftMotor(1);
+NoU_Motor frontRightMotor(4);
+NoU_Motor rearLeftMotor(8);
+NoU_Motor rearRightMotor(5);
 
-NoU_Drivetrain drivetrain(&frontleftMotor, &frontrightMotor, &backleftMotor, &backrightMotor);
+NoU_Motor testMotor(6);
 
+NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
-// Quick variable changes
-bool zeroPressed = false;
+float measured_angle = 31.416;
+float angular_scale = (5.0*2.0*PI) / measured_angle;
 
 void setup() {
- Serial.begin(115200); // the bauder rate gotta be 9600 or 115200
- PestoLink.begin("Tralalero Tralala");
+  PestoLink.begin("ADD V");
+  Serial.begin(115200);
 
- frontrightMotor.setInverted(true);
- backrightMotor.setInverted(true);
+  NoU3.begin();
+  NoU3.calibrateIMUs(); // this takes exactly one second. Do not move the robot during calibration.
+
+  // Inversion Parts
+  frontLeftMotor.setInverted(true);
+  frontRightMotor.setInverted(true);
+  rearLeftMotor.setInverted(true);
+  rearRightMotor.setInverted(true);
 }
 
-
 void loop() {
- //--Joystick Controls--
- float horizontalThrottle = 0;
- float verticalThrottle = 0;
- float rotationalThrottle = 0;
+  // Ima be real gangalang, I have no idea what is this
+  static unsigned long lastPrintTime = 0;
+  if (lastPrintTime + 100 < millis()){
+      Serial.printf("gyro yaw (radians): %.3f\r\n",  NoU3.yaw * angular_scale );
+      lastPrintTime = millis();
+  }
 
- double fl_throttle = 0;
- double fr_throttle = 0;
- double bl_throttle = 0;
- double br_throttle = 0;
+  // This measures your batteries voltage and sends it to PestoLink
+  float batteryVoltage = NoU3.getBatteryVoltage();
+  PestoLink.printBatteryVoltage(batteryVoltage);
 
- //Set the throttle of the robot based on what key is pressed
- horizontalThrottle = 1 * PestoLink.getAxis(0);
- verticalThrottle =  -1 * PestoLink.getAxis(1);
- rotationalThrottle = 1 * PestoLink.getAxis(2);
+  if (PestoLink.isConnected()) {
+    // --- Test Functions---
+    if (PestoLink.buttonHeld(0)) {
+      testMotor.set(1);
+    } else {
+      testMotor.set(0);
+    }
+    if (PestoLink.buttonHeld(1)) {
+      testMotor.set(-1);
+    } else {
+      testMotor.set(0);
+    }
 
- if (PestoLink.buttonHeld(0)) {
-    horizontalThrottle /= 2;
-    verticalThrottle /= 2;
-    rotationalThrottle /= 2;
- }
+    // --- Drivetrain Code ---
+    // Sets Axes
+    float fieldPowerX = PestoLink.getAxis(0);
+    float fieldPowerY = -1 * PestoLink.getAxis(1);
+    float rotationPower = -1 * PestoLink.getAxis(2);
 
-  drivetrain.holonomicDrive(horizontalThrottle, verticalThrottle, rotationalThrottle);
+    // Get robot heading (in radians) from the gyro
+    float heading = NoU3.yaw * angular_scale;
 
-  PestoLink.update();
+    // Rotate joystick vector to be robot-centric
+    float cosA = cos(heading);
+    float sinA = sin(heading);
+
+    float robotPowerX = fieldPowerX * cosA + fieldPowerY * sinA;
+    float robotPowerY = -fieldPowerX * sinA + fieldPowerY * cosA;
+
+    //set motor power
+    drivetrain.holonomicDrive(robotPowerX, robotPowerY, rotationPower);
+    NoU3.setServiceLight(LIGHT_ENABLED);
+  } else {
+    drivetrain.holonomicDrive(0, 0, 0); // lmao the example def took from us
+    NoU3.setServiceLight(LIGHT_DISABLED);
+  }
 }
