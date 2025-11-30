@@ -140,7 +140,7 @@ void loop() {
       ElevatorMotor.set(0);
     }
 
-    //Intake Servo
+    // Intake Motors
     if (PestoLink.buttonHeld(12) || PestoLink.buttonHeld(13)) {
       if (PestoLink.buttonHeld(12)) { // Ts so arbitrary 😭
         intakeMotor.setInverted(false);
@@ -152,13 +152,14 @@ void loop() {
       intakeMotor.set(0);
     }
 
-    // Adjust Height
+    // Adjust Arm Pivot
     if (PestoLink.buttonHeld(1)) {
       PivotingServo.write(0);
     } else {
       PivotingServo.write(135);
     }
 
+    // Intake Arm Servo Movement
     if (PestoLink.buttonHeld(0)) {
       IntakeServo.write(180);
     } else {
