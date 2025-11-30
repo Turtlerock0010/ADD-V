@@ -39,3 +39,11 @@ This is where you can find all the parts of the code that I deemed to be somethi
 - `myPIDMotor.setAngle(90);`
 - Sets the motor to the desired angle.
 - Requires a MotorPID to already be created.
+
+### General Robot Adjustments
+- `frontLeftMotor.setInverted(true);`
+- `frontRightMotor.setInverted(true);`
+- `rearLeftMotor.setInverted(true);`
+- `rearRightMotor.setInverted(true);`
+- Sets inversion or no inversion for the drivetrain motors.
+- Requires drivetrain motors to already be defined.
