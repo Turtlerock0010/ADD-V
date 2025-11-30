@@ -89,7 +89,10 @@ NoU_Motor frontRightMotor(4);
 NoU_Motor rearLeftMotor(8);
 NoU_Motor rearRightMotor(5);
 
-NoU_Motor testMotor(6);
+NoU_Motor intakeMotor(3);
+NoU_Motor ElevatorMotor(2);
+NoU_Servo PivotingServo(1);
+NoU_Servo IntakeServo(2);
 
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
 
@@ -123,17 +126,45 @@ void loop() {
   PestoLink.printBatteryVoltage(batteryVoltage);
 
   if (PestoLink.isConnected()) {
-    // --- Test Functions---
-    if (PestoLink.buttonHeld(0)) {
-      testMotor.set(1);
+    // ---Robot Functions---
+
+    // Raise Elevator (TEMPORARY)
+    if (PestoLink.buttonHeld(4) || PestoLink.buttonHeld(5)) {
+      if (PestoLink.buttonHeld(4)) { // Ts so arbitrary 😭
+        ElevatorMotor.setInverted(false);
+      } else if (PestoLink.buttonHeld(5)) {
+        ElevatorMotor.setInverted(true);
+      }
+      ElevatorMotor.set(1);
     } else {
-      testMotor.set(0);
+      ElevatorMotor.set(0);
     }
+
+    //Intake Servo
+    if (PestoLink.buttonHeld(12) || PestoLink.buttonHeld(13)) {
+      if (PestoLink.buttonHeld(12)) { // Ts so arbitrary 😭
+        intakeMotor.setInverted(false);
+      } else if (PestoLink.buttonHeld(13)) {
+        intakeMotor.setInverted(true);
+      }
+      intakeMotor.set(1);
+    } else {
+      intakeMotor.set(0);
+    }
+
+    // Adjust Height
     if (PestoLink.buttonHeld(1)) {
-      testMotor.set(-1);
+      PivotingServo.write(0);
     } else {
-      testMotor.set(0);
+      PivotingServo.write(135);
     }
+
+    if (PestoLink.buttonHeld(0)) {
+      IntakeServo.write(180);
+    } else {
+      IntakeServo.write(110);
+    }
+
 
     // --- Drivetrain Code ---
     // Sets Axes
