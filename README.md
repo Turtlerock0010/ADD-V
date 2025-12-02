@@ -8,6 +8,9 @@ Welcome to ADD V code respository, A repository for the programmers of Mini FRC 
 ## Guide
 This is where you can find all the parts of the code that I deemed to be something that you really want an explanation on what it exactly does in the code as some of the features. The reason why I am doing this now is because from previous MiniFRC code reading and deciphering it is really hard to actually know what does what and why it does what it needs to do. So please use this area as a reference in order to find out what in the world is going on in the code.
 
+### Layouts
+<img width="1219" height="611" alt="Screenshot 2025-12-02 at 5 41 00 PM" src="https://github.com/user-attachments/assets/45de75ea-8f05-475f-ab8b-f6c7aa64850f" />
+
 ### PID Controller
 
 #### Defining A Motor
