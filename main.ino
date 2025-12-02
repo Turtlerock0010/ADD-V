@@ -129,10 +129,10 @@ void loop() {
     // ---Robot Functions---
 
     // Raise Elevator (TEMPORARY)
-    if (PestoLink.buttonHeld(4) || PestoLink.buttonHeld(5)) {
-      if (PestoLink.buttonHeld(4)) { // Ts so arbitrary 😭
+    if (PestoLink.buttonHeld(4) || PestoLink.buttonHeld(5) || PestoLink.keyHeld(Key::Q) || PestoLink.keyHeld(Key::E)) {
+      if (PestoLink.buttonHeld(4) || PestoLink.keyHeld(Key::E)) { // Ts so arbitrary 😭
         ElevatorMotor.setInverted(false);
-      } else if (PestoLink.buttonHeld(5)) {
+      } else if (PestoLink.buttonHeld(5) || PestoLink.keyHeld(Key::Q)) {
         ElevatorMotor.setInverted(true);
       }
       ElevatorMotor.set(1);
@@ -140,11 +140,11 @@ void loop() {
       ElevatorMotor.set(0);
     }
 
-    // Intake Motors
-    if (PestoLink.buttonHeld(12) || PestoLink.buttonHeld(13)) {
-      if (PestoLink.buttonHeld(12)) { // Ts so arbitrary 😭
+    //Intake Servo
+    if (PestoLink.buttonHeld(12) || PestoLink.buttonHeld(13) || PestoLink.keyHeld(Key::R) || PestoLink.keyHeld(Key::F)) {
+      if (PestoLink.buttonHeld(12) || PestoLink.keyHeld(Key::R)) { // Ts so arbitrary 😭
         intakeMotor.setInverted(false);
-      } else if (PestoLink.buttonHeld(13)) {
+      } else if (PestoLink.buttonHeld(13) || PestoLink.keyHeld(Key::F)) {
         intakeMotor.setInverted(true);
       }
       intakeMotor.set(1);
@@ -152,15 +152,14 @@ void loop() {
       intakeMotor.set(0);
     }
 
-    // Adjust Arm Pivot
-    if (PestoLink.buttonHeld(1)) {
+    // Adjust Height
+    if (PestoLink.buttonHeld(1) || PestoLink.keyHeld(Key::C)) {
       PivotingServo.write(0);
     } else {
       PivotingServo.write(135);
     }
 
-    // Intake Arm Servo Movement
-    if (PestoLink.buttonHeld(0)) {
+    if (PestoLink.buttonHeld(0) || PestoLink.keyHeld(Key::V)) {
       IntakeServo.write(180);
     } else {
       IntakeServo.write(110);
