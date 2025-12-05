@@ -89,12 +89,17 @@ NoU_Motor frontRightMotor(4);
 NoU_Motor rearLeftMotor(8);
 NoU_Motor rearRightMotor(5);
 
+// Motor Functions Init
 NoU_Motor intakeMotor(3);
-NoU_Motor ElevatorMotor(2);
-NoU_Servo PivotingServo(1);
-NoU_Servo IntakeServo(2);
+NoU_Motor elevatorMotor(6);
+NoU_Servo pivotingServo(1);
+NoU_Servo intakeServo(2);
 
+// Drivetrain Init
 NoU_Drivetrain drivetrain(&frontLeftMotor, &frontRightMotor, &rearLeftMotor, &rearRightMotor);
+
+// PID Init
+MotorPID elevatorMotorPID(elevatorMotor);
 
 float measured_angle = 31.416;
 float angular_scale = (5.0*2.0*PI) / measured_angle;
@@ -105,6 +110,16 @@ void setup() {
 
   NoU3.begin();
   NoU3.calibrateIMUs(); // this takes exactly one second. Do not move the robot during calibration.
+
+  // Encoder Startup
+  elevatorMotor.beginEncoder();
+
+  // PID Values (IMPORTANT! Either tell Daniel or Yadhu to change the values)
+  elevatorMotorPID.Kp = 0.005;
+  elevatorMotorPID.Ki = 0;
+  elevatorMotorPID.Kd = 0.001;
+
+  elevatorMotorPID.setAngle(0);
 
   // Inversion Parts
   frontLeftMotor.setInverted(true);
@@ -128,16 +143,13 @@ void loop() {
   if (PestoLink.isConnected()) {
     // ---Robot Functions---
 
-    // Raise Elevator (TEMPORARY)
-    if (PestoLink.buttonHeld(4) || PestoLink.buttonHeld(5) || PestoLink.keyHeld(Key::Q) || PestoLink.keyHeld(Key::E)) {
-      if (PestoLink.buttonHeld(4) || PestoLink.keyHeld(Key::E)) { // Ts so arbitrary 😭
-        ElevatorMotor.setInverted(false);
-      } else if (PestoLink.buttonHeld(5) || PestoLink.keyHeld(Key::Q)) {
-        ElevatorMotor.setInverted(true);
-      }
-      ElevatorMotor.set(1);
-    } else {
-      ElevatorMotor.set(0);
+    // Raise Elevator 
+    if (PestoLink.buttonHeld(4) || PestoLink.keyHeld(Key::E)) {
+      elevatorMotorPID.setAngle(-4000);
+      // The range is from 0 to -4000 with the current elevator,
+      // But if the elevator is fixed it can possibly go up to -6000
+    } else if (PestoLink.buttonHeld(5) || PestoLink.keyHeld(Key::Q)) {
+      elevatorMotorPID.setAngle(0);
     }
 
     //Intake Servo
@@ -154,15 +166,16 @@ void loop() {
 
     // Adjust Height
     if (PestoLink.buttonHeld(1) || PestoLink.keyHeld(Key::C)) {
-      PivotingServo.write(0);
+      pivotingServo.write(0);
     } else {
-      PivotingServo.write(135);
+      pivotingServo.write(135); // Set it back to 135
     }
 
+    // Adjusts Intake Arm Angle (Possibly might be removed)
     if (PestoLink.buttonHeld(0) || PestoLink.keyHeld(Key::V)) {
-      IntakeServo.write(180);
+      intakeServo.write(100);
     } else {
-      IntakeServo.write(110);
+      intakeServo.write(180);
     }
 
 
@@ -182,7 +195,10 @@ void loop() {
     float robotPowerX = fieldPowerX * cosA + fieldPowerY * sinA;
     float robotPowerY = -fieldPowerX * sinA + fieldPowerY * cosA;
 
-    //set motor power
+    // Updates PID State
+    elevatorMotorPID.updateMotor();
+
+    // set motor power
     drivetrain.holonomicDrive(robotPowerX, robotPowerY, rotationPower);
     NoU3.setServiceLight(LIGHT_ENABLED);
   } else {
