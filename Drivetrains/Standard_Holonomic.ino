@@ -1,12 +1,12 @@
 /*
-Program: ADD V Code
+Program: Standard Holonomic Drive Code
 Creation: November 18th, 2025
 Contributors: Daniel Principe
 Use: Standard holonomic program
 */
 
 
-#include <Alfredo_NoU2.h>
+#include <Alfredo_NoU3.h>
 #include <PestoLink-Receive.h>
 #include <stdio.h>
 
@@ -25,7 +25,11 @@ bool zeroPressed = false;
 
 void setup() {
  Serial.begin(115200); // the bauder rate gotta be 9600 or 115200
- PestoLink.begin("Tralalero Tralala");
+ PestoLink.begin("Standard Holonomic Drive Test");
+
+ // NoU3 Startup
+ NoU3.begin();
+ NoU3.calibrateIMUs(); // this takes exactly one second. Do not move the robot during calibration.
 
  frontrightMotor.setInverted(true);
  backrightMotor.setInverted(true);
